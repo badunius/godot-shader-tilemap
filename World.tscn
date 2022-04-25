@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://mini-map.png" type="Texture" id=1]
+[ext_resource path="res://tileset.png" type="Texture" id=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+uniform sampler2D mini_map;
+uniform sampler2D tile_set;
+uniform int map_size = 256;
+uniform int tile_cols = 16;
+uniform int tile_rows = 16;
+uniform int tile_size = 16;
+
+vec2 tile_offset(float tile_id) {
+	float index = float(tile_cols * tile_rows - 1) * tile_id;
+	float col = mod(index, float(tile_cols))/ float(tile_cols);
+	float row = floor(index / float(tile_cols))/ float(tile_rows);
+	
+	return vec2(
+		col ,
+		row 
+	);
+}
+
+void fragment() {
+	vec2 world_uv = UV * float(map_size);
+	
+	vec2 tile_coord = floor(world_uv) / float(map_size);
+	vec4 tile_data = texture(mini_map, tile_coord);
+	
+	vec2 tile_uv = fract(world_uv) / float(tile_size);
+	
+	vec4 value = texture(tile_set, tile_uv + tile_offset(tile_data.r));
+	
+	COLOR = value;
+}"
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = SubResource( 1 )
+shader_param/map_size = 1024
+shader_param/tile_cols = 16
+shader_param/tile_rows = 16
+shader_param/tile_size = 16
+shader_param/mini_map = ExtResource( 1 )
+shader_param/tile_set = ExtResource( 2 )
+
+[node name="World" type="Node2D"]
+
+[node name="Mini-map" type="Sprite" parent="."]
+material = SubResource( 2 )
+position = Vector2( 1175, -1568 )
+scale = Vector2( 16, 16 )
+texture = ExtResource( 1 )
